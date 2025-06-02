@@ -1,6 +1,3 @@
-Example Pipeline YAML:
-Code
- 
 # stages: [Build, Deploy]
 stages:
   - stage: Build
@@ -13,6 +10,7 @@ stages:
               echo "Building function..."
               # Your build commands here (e.g., npm install, build, package)
             displayName: "Build Function"
+
   - stage: Deploy
     dependsOn:
       - Build
@@ -25,17 +23,26 @@ stages:
             displayName: "Download Service Account Key"
             inputs:
               secureFile: serviceAccountKey
+
           - task: Bash@3
+            displayName: "Deploy Cloud Function"
             inputs:
               targetType: 'inline'
               script: |
-                gcloud functions deploy <function-name> \
-                  --region=$(GCP_REGION) \
+                # Authenticate with service account key
+                gcloud auth activate-service-account --key-file $(Agent.TempDirectory)/serviceAccountKey.json
+
+                # Set the project (optional if already set)
+                gcloud config set project compute-iam-test
+
+                # Deploy the function
+                gcloud functions deploy myFunction \
+                  --region=us-central1 \
                   --source=. \
-                  --runtime=<runtime> \
+                  --runtime=python311 \
                   --trigger-http \
                   --allow-unauthenticated \
-                  --entry-point=<entryPoint> \
+                  --entry-point=my_entry_point \
+                  --service-account=cloud-function-deployer@compute-iam-test.iam.gserviceaccount.com \
                   --quiet
-      
-            displayName: "Deploy Function"
+        displayName: "Deploy Cloud Function"
