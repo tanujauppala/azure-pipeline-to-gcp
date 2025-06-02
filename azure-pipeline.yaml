@@ -30,19 +30,23 @@ stages:
               targetType: 'inline'
               script: |
                 # Authenticate with service account key
-                gcloud auth activate-service-account --key-file $(Agent.TempDirectory)/serviceAccountKey.json
+                gcloud auth activate-service-account --key-file "$(Agent.TempDirectory)/compute-iam-test-c777ed5d2926.json"
 
-                # Set the project (optional if already set)
+                # Set the project
                 gcloud config set project compute-iam-test
 
+                # Store working directory safely
+                SOURCE_DIR="$(System.DefaultWorkingDirectory)"
+
+                echo "Deploying from source: $SOURCE_DIR"
+
                 # Deploy the function
-                gcloud functions deploy myFunction \
+                gcloud functions deploy myFunctiondemo \
                   --region=us-central1 \
-                  --source=. \
+                  --source="$SOURCE_DIR" \
                   --runtime=python311 \
                   --trigger-http \
                   --allow-unauthenticated \
                   --entry-point=my_entry_point \
                   --service-account=cloud-function-deployer@compute-iam-test.iam.gserviceaccount.com \
                   --quiet
-        displayName: "Deploy Cloud Function"
