@@ -25,11 +25,17 @@ stages:
             displayName: "Download Service Account Key"
             inputs:
               secureFile: serviceAccountKey
-          - script: |
-              echo "Deploying function..."
-              # Authenticate with Google Cloud
-              gcloud auth activate-service-account --key-file=$(secureFile.secureFilePath)
-              # Deploy the function
-              gcloud functions deploy [FUNCTION_NAME] --runtime [RUNTIME] --trigger-http --region [REGION] --project [PROJECT_ID]
-              # [FUNCTION_NAME], [RUNTIME], [REGION], [PROJECT_ID] should be replaced with your actual values
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                gcloud functions deploy <function-name> \
+                  --region=$(GCP_REGION) \
+                  --source=. \
+                  --runtime=<runtime> \
+                  --trigger-http \
+                  --allow-unauthenticated \
+                  --entry-point=<entryPoint> \
+                  --quiet
+      
             displayName: "Deploy Function"
