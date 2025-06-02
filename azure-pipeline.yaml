@@ -22,7 +22,7 @@ stages:
           - task: DownloadSecureFile@1
             displayName: "Download Service Account Key"
             inputs:
-              secureFile: serviceAccountKey
+              secureFile: compute-iam-test-c777ed5d2926.json
 
           - task: Bash@3
             displayName: "Deploy Cloud Function"
