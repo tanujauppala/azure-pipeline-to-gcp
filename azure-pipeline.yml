@@ -1,0 +1,35 @@
+Example Pipeline YAML:
+Code
+ 
+# stages: [Build, Deploy]
+stages:
+  - stage: Build
+    jobs:
+      - job: Build
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: |
+              echo "Building function..."
+              # Your build commands here (e.g., npm install, build, package)
+            displayName: "Build Function"
+  - stage: Deploy
+    dependsOn:
+      - Build
+    jobs:
+      - job: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: DownloadSecureFile@1
+            displayName: "Download Service Account Key"
+            inputs:
+              secureFile: serviceAccountKey
+          - script: |
+              echo "Deploying function..."
+              # Authenticate with Google Cloud
+              gcloud auth activate-service-account --key-file=$(secureFile.secureFilePath)
+              # Deploy the function
+              gcloud functions deploy [FUNCTION_NAME] --runtime [RUNTIME] --trigger-http --region [REGION] --project [PROJECT_ID]
+              # [FUNCTION_NAME], [RUNTIME], [REGION], [PROJECT_ID] should be replaced with your actual values
+            displayName: "Deploy Function"
